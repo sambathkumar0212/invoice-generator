@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invoice {{ invoice.invoice_number }} - Invoice Generator{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-file-invoice text-primary"></i>
+                        Invoice {{ invoice.invoice_number }}
+                    </h1>
+                    <p class="text-muted mb-0">Issued on {{ invoice.issue_date|date:"F d, Y" }}</p>
+                </div>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'invoice_management:invoice_edit' invoice.pk %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'invoice_management:invoice_pdf' invoice.pk %}" class="btn btn-primary" target="_blank">
+                        <i class="fas fa-download"></i> Download PDF
+                    </a>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            Status: <span class="badge bg-{{ invoice.status|default:'secondary' }}">{{ invoice.get_status_display }}</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for status_code, status_display in invoice.STATUS_CHOICES %}
+                                <li>
+                                    <a class="dropdown-item status-update" href="#" data-invoice-id="{{ invoice.pk }}" data-status="{{ status_code }}">
+                                        {{ status_display }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Invoice Card -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Company Information -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-building"></i> From
+                            </h5>
+                            <div class="company-info">
+                                <h6 class="fw-bold">{{ invoice.company.name }}</h6>
+                                {% if invoice.company.address %}
+                                    <p class="mb-1">{{ invoice.company.address|linebreaks }}</p>
+                                {% endif %}
+                                {% if invoice.company.phone %}
+                                    <p class="mb-1"><i class="fas fa-phone text-muted"></i> {{ invoice.company.phone }}</p>
+                                {% endif %}
+                                {% if invoice.company.email %}
+                                    <p class="mb-1"><i class="fas fa-envelope text-muted"></i> {{ invoice.company.email }}</p>
+                                {% endif %}
+                                {% if invoice.company.website %}
+                                    <p class="mb-0"><i class="fas fa-globe text-muted"></i> {{ invoice.company.website }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Client Information -->
+                        <div class="col-md-6">
+                            <h5 class="text-success mb-3">
+                                <i class="fas fa-user"></i> Bill To
+                            </h5>
+                            <div class="client-info">
+                                <h6 class="fw-bold">{{ invoice.client.name }}</h6>
+                                {% if invoice.client.company_name %}
+                                    <p class="mb-1 text-muted">{{ invoice.client.company_name }}</p>
+                                {% endif %}
+                                {% if invoice.client.address %}
+                                    <p class="mb-1">{{ invoice.client.address }}</p>
+                                {% endif %}
+                                {% if invoice.client.city or invoice.client.state or invoice.client.postal_code %}
+                                    <p class="mb-1">
+                                        {% if invoice.client.city %}{{ invoice.client.city }}{% endif %}{% if invoice.client.state %}, {{ invoice.client.state }}{% endif %} {% if invoice.client.postal_code %}{{ invoice.client.postal_code }}{% endif %}
+                                    </p>
+                                {% endif %}
+                                {% if invoice.client.country and invoice.client.country != 'United States' %}
+                                    <p class="mb-1">{{ invoice.client.country }}</p>
+                                {% endif %}
+                                <p class="mb-1"><i class="fas fa-envelope text-muted"></i> {{ invoice.client.email }}</p>
+                                {% if invoice.client.phone %}
+                                    <p class="mb-0"><i class="fas fa-phone text-muted"></i> {{ invoice.client.phone }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Invoice Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Invoice Number</h6>
+                            <p class="fw-bold">{{ invoice.invoice_number }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Issue Date</h6>
+                            <p>{{ invoice.issue_date|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Due Date</h6>
+                            <p class="{% if invoice.is_overdue %}text-danger fw-bold{% endif %}">
+                                {{ invoice.due_date|date:"M d, Y" }}
+                                {% if invoice.is_overdue %}
+                                    <span class="badge bg-danger ms-1">Overdue</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Status</h6>
+                            <span class="badge bg-{{ invoice.status }} fs-6">{{ invoice.get_status_display }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Items -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-center">Unit</th>
+                                    <th class="text-end">Rate</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in invoice.items.all %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-medium">{{ item.description }}</div>
+                                    </td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                    <td class="text-center">{{ item.unit|default:"each" }}</td>
+                                    <td class="text-end">{{ invoice.company.get_currency_symbol }}{{ item.rate }}</td>
+                                    <td class="text-end fw-bold">{{ invoice.company.get_currency_symbol }}{{ item.total }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                                        <p>No items added to this invoice yet.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="row justify-content-end">
+                        <div class="col-md-4">
+                            <div class="card border-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Subtotal:</span>
+                                        <span>{{ invoice.company.get_currency_symbol }}{{ invoice.subtotal }}</span>
+                                    </div>
+                                    {% if invoice.tax_rate > 0 %}
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Tax ({{ invoice.tax_rate }}%):</span>
+                                        <span>{{ invoice.company.get_currency_symbol }}{{ invoice.tax_amount }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <hr>
+                                    <div class="d-flex justify-content-between fw-bold fs-5">
+                                        <span>Total:</span>
+                                        <span class="text-primary">{{ invoice.company.get_currency_symbol }}{{ invoice.total }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    {% if invoice.notes %}
+                    <div class="mt-4">
+                        <h6 class="text-muted mb-2">Notes</h6>
+                        <div class="border-start border-primary border-3 ps-3">
+                            {{ invoice.notes|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="mt-4">
+                <a href="{% url 'invoice_management:invoice_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Invoices
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle status updates
+    const statusUpdateLinks = document.querySelectorAll('.status-update');
+    statusUpdateLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const invoiceId = this.dataset.invoiceId;
+            const newStatus = this.dataset.status;
+            const currentStatus = '{{ invoice.status }}';
+            
+            if (newStatus === currentStatus) {
+                return; // No change needed
+            }
+            
+            // Show confirmation
+            if (confirm(`Are you sure you want to change the status to "${this.textContent.trim()}"?`)) {
+                fetch(`{% url 'invoice_management:invoice_status_update' invoice.pk %}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        status: newStatus
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show updated status
+                        location.reload();
+                    } else {
+                        alert('Error updating status: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the status.');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

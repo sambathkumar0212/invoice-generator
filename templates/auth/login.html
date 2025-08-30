@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}🔥 Login - InvoiceGen Pro{% endblock %}
+
+{% block content %}
+<div class="auth-card card animate__animated animate__zoomIn">
+    <div class="card-header text-center">
+        <div class="mb-3">
+            <i class="fas fa-rocket fa-3x animate__animated animate__bounce animate__infinite"></i>
+        </div>
+        <h2 class="mb-0">Welcome Back! 🎉</h2>
+        <p class="mb-0 opacity-75">Sign in to your awesome invoice workspace</p>
+    </div>
+    <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="{{ form.username.id_for_label }}" class="form-label">
+                    <i class="fas fa-user"></i> Email/Username
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0">
+                        <i class="fas fa-at text-muted"></i>
+                    </span>
+                    {{ form.username }}
+                </div>
+                {% if form.username.errors %}
+                    <div class="text-danger mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ form.username.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <label for="{{ form.password.id_for_label }}" class="form-label">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0">
+                        <i class="fas fa-key text-muted"></i>
+                    </span>
+                    {{ form.password }}
+                </div>
+                {% if form.password.errors %}
+                    <div class="text-danger mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ form.password.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 mb-3 animate__animated animate__pulse">
+                <i class="fas fa-sign-in-alt"></i> Sign In & Start Creating
+            </button>
+        </form>
+        
+        <div class="text-center">
+            <p class="mb-3">
+                <span class="text-muted">New to InvoiceGen Pro?</span>
+            </p>
+            <a href="{% url 'authentication:signup' %}" class="btn btn-outline-success w-100">
+                <i class="fas fa-user-plus"></i> Create Free Account
+            </a>
+        </div>
+        
+        <div class="text-center mt-4">
+            <small class="text-muted">
+                <i class="fas fa-shield-alt"></i> Secure • Fast • Modern
+            </small>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <div class="row text-white">
+        <div class="col-4">
+            <i class="fas fa-bolt fa-2x mb-2 animate__animated animate__flash animate__infinite"></i>
+            <p><small>Lightning Fast</small></p>
+        </div>
+        <div class="col-4">
+            <i class="fas fa-palette fa-2x mb-2 animate__animated animate__swing animate__infinite"></i>
+            <p><small>Beautiful Design</small></p>
+        </div>
+        <div class="col-4">
+            <i class="fas fa-mobile-alt fa-2x mb-2 animate__animated animate__tada animate__infinite"></i>
+            <p><small>Mobile Ready</small></p>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Add input focus effects
+document.querySelectorAll('.form-control').forEach(input => {
+    input.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'scale(1.02)';
+        this.parentElement.style.transition = 'all 0.3s ease';
+    });
+    
+    input.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'scale(1)';
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

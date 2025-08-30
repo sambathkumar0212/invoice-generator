@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}👥 Clients - InvoiceGen Pro{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="animate__animated animate__fadeInLeft">
+                    <i class="fas fa-users"></i> Your Clients
+                </h2>
+                <a href="{% url 'invoice_management:client_create' %}" class="btn btn-success animate__animated animate__pulse animate__infinite">
+                    <i class="fas fa-user-plus"></i> Add New Client
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-search"></i> Search Clients
+                            </label>
+                            <input type="text" name="search" value="{{ search|default:'' }}" 
+                                   class="form-control" placeholder="Search by name, email, or company...">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-info me-2">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <a href="{% url 'invoice_management:client_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clients Grid -->
+    <div class="row">
+        {% if page_obj.object_list %}
+            {% for client in page_obj.object_list %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 animate__animated animate__zoomIn" style="animation-delay: 0.{{ forloop.counter }}s">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-lg me-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                    {{ client.name|first|upper }}
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1">{{ client.name }}</h5>
+                                {% if client.company_name %}
+                                    <p class="text-muted mb-0">{{ client.company_name }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="mb-1">
+                                <i class="fas fa-envelope text-muted me-2"></i>
+                                <a href="mailto:{{ client.email }}" class="text-decoration-none">{{ client.email }}</a>
+                            </p>
+                            {% if client.phone %}
+                            <p class="mb-1">
+                                <i class="fas fa-phone text-muted me-2"></i>
+                                <a href="tel:{{ client.phone }}" class="text-decoration-none">{{ client.phone }}</a>
+                            </p>
+                            {% endif %}
+                            {% if client.address %}
+                            <p class="mb-0">
+                                <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                <small class="text-muted">{{ client.address|truncatechars:50 }}</small>
+                            </p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Client Stats -->
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <div class="stats-mini">
+                                    <h6 class="mb-0 text-primary">{{ client.total_invoices|default:0 }}</h6>
+                                    <small class="text-muted">Invoices</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-mini">
+                                    <h6 class="mb-0 text-success">${{ client.total_amount|default:0 }}</h6>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'invoice_management:invoice_create' %}?client={{ client.pk }}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> New Invoice
+                            </a>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-info" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-warning" title="Edit Client">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Added {{ client.created_at|date:"M d, Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card animate__animated animate__fadeInUp">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-users fa-4x text-muted opacity-50"></i>
+                        </div>
+                        {% if search %}
+                            <h5 class="text-muted mb-3">No clients found matching your search 🔍</h5>
+                            <p class="text-muted mb-4">Try searching with different keywords</p>
+                            <a href="{% url 'invoice_management:client_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-times"></i> Clear Search
+                            </a>
+                        {% else %}
+                            <h5 class="text-muted mb-3">No clients yet! Time to build your network 🤝</h5>
+                            <p class="text-muted mb-4">Add your first client and start building relationships</p>
+                            <a href="{% url 'invoice_management:client_create' %}" class="btn btn-success pulse">
+                                <i class="fas fa-user-plus"></i> Add Your First Client
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Clients pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+// Add hover effects to client cards
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-5px)';
+        this.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

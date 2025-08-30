@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block title %}🚀 Dashboard - InvoiceGen Pro{% endblock %}
+
+{% block content %}
+<div class="dashboard-title animate__animated animate__fadeInDown">
+    <h1><i class="fas fa-fire"></i> Your Invoice Empire</h1>
+    {% if request.company %}
+        <p>Ruling {{ request.company.name }} like a boss! 💪</p>
+    {% endif %}
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card primary animate__animated animate__zoomIn" style="animation-delay: 0.1s">
+            <i class="fas fa-file-invoice"></i>
+            <h3>{{ total_invoices }}</h3>
+            <p>Total Invoices</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card success animate__animated animate__zoomIn" style="animation-delay: 0.2s">
+            <i class="fas fa-users"></i>
+            <h3>{{ total_clients }}</h3>
+            <p>Happy Clients</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card warning animate__animated animate__zoomIn" style="animation-delay: 0.3s">
+            <i class="fas fa-clock"></i>
+            <h3>{{ pending_invoices }}</h3>
+            <p>Pending Payment</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card danger animate__animated animate__zoomIn" style="animation-delay: 0.4s">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>{{ overdue_invoices }}</h3>
+            <p>Overdue</p>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card animate__animated animate__slideInUp" style="animation-delay: 0.5s">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body text-center">
+                <a href="{% url 'invoice_management:invoice_create' %}" class="btn btn-primary me-3 mb-2 animate__animated animate__pulse animate__infinite">
+                    <i class="fas fa-plus-circle"></i> Create Invoice
+                </a>
+                <a href="{% url 'invoice_management:client_create' %}" class="btn btn-success me-3 mb-2">
+                    <i class="fas fa-user-plus"></i> Add Client
+                </a>
+                <a href="{% url 'invoice_management:invoice_list' %}" class="btn btn-info me-3 mb-2">
+                    <i class="fas fa-list"></i> View All Invoices
+                </a>
+                <a href="{% url 'invoice_management:client_list' %}" class="btn btn-warning mb-2">
+                    <i class="fas fa-address-book"></i> Manage Clients
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Invoices -->
+<div class="row">
+    <div class="col-12">
+        <div class="card animate__animated animate__slideInUp" style="animation-delay: 0.6s">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-history"></i> Recent Invoices</h5>
+                {% if recent_invoices %}
+                <a href="{% url 'invoice_management:invoice_list' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-external-link-alt"></i> View All
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if recent_invoices %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag"></i> Invoice #</th>
+                                    <th><i class="fas fa-user"></i> Client</th>
+                                    <th><i class="fas fa-calendar"></i> Date</th>
+                                    <th><i class="fas fa-info-circle"></i> Status</th>
+                                    <th><i class="fas fa-dollar-sign"></i> Total</th>
+                                    <th><i class="fas fa-cogs"></i> Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in recent_invoices %}
+                                <tr class="animate__animated animate__fadeInUp" style="animation-delay: 0.{{ forloop.counter }}s">
+                                    <td class="fw-bold">{{ invoice.invoice_number }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                    {{ invoice.client.name|first|upper }}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ invoice.client.name }}</div>
+                                                <small class="text-muted">{{ invoice.client.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ invoice.issue_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'sent' %}warning{% elif invoice.status == 'overdue' %}danger{% else %}secondary{% endif %}">
+                                            {% if invoice.status == 'paid' %}
+                                                <i class="fas fa-check"></i>
+                                            {% elif invoice.status == 'sent' %}
+                                                <i class="fas fa-paper-plane"></i>
+                                            {% elif invoice.status == 'overdue' %}
+                                                <i class="fas fa-exclamation"></i>
+                                            {% else %}
+                                                <i class="fas fa-edit"></i>
+                                            {% endif %}
+                                            {{ invoice.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold">${{ invoice.total }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'invoice_management:invoice_detail' invoice.pk %}" 
+                                               class="btn btn-outline-primary" title="View Invoice">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'invoice_management:invoice_pdf' invoice.pk %}" 
+                                               class="btn btn-outline-success" title="Download PDF" target="_blank">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-file-invoice fa-4x text-muted opacity-50"></i>
+                        </div>
+                        <h5 class="text-muted mb-3">No invoices yet! Time to start your journey 🚀</h5>
+                        <p class="text-muted mb-4">Create your first invoice and watch your business grow!</p>
+                        <a href="{% url 'invoice_management:invoice_create' %}" class="btn btn-primary pulse">
+                            <i class="fas fa-plus"></i> Create Your First Invoice
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if total_invoices == 0 %}
+<!-- Onboarding Tips for New Users -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card animate__animated animate__fadeInUp" style="animation-delay: 0.8s">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb"></i> Quick Start Guide</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="mb-3">
+                            <i class="fas fa-user-plus fa-3x text-success"></i>
+                        </div>
+                        <h6>1. Add Your First Client</h6>
+                        <p class="text-muted small">Start by adding your customer's information</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="mb-3">
+                            <i class="fas fa-file-plus fa-3x text-primary"></i>
+                        </div>
+                        <h6>2. Create an Invoice</h6>
+                        <p class="text-muted small">Add your services and generate a professional invoice</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="mb-3">
+                            <i class="fas fa-download fa-3x text-warning"></i>
+                        </div>
+                        <h6>3. Download & Send</h6>
+                        <p class="text-muted small">Get your PDF and send it to your client</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+// Add some interactive animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate stats numbers
+    const statNumbers = document.querySelectorAll('.stats-card h3');
+    statNumbers.forEach(stat => {
+        const finalNumber = parseInt(stat.textContent);
+        let currentNumber = 0;
+        const increment = Math.ceil(finalNumber / 20);
+        
+        const timer = setInterval(() => {
+            currentNumber += increment;
+            if (currentNumber >= finalNumber) {
+                currentNumber = finalNumber;
+                clearInterval(timer);
+            }
+            stat.textContent = currentNumber;
+        }, 50);
+    });
+    
+    // Add hover effects to table rows
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.02)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

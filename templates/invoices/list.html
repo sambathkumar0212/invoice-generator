@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}📋 Invoices - InvoiceGen Pro{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="animate__animated animate__fadeInLeft">
+                    <i class="fas fa-file-invoice"></i> Your Invoices
+                </h2>
+                <a href="{% url 'invoice_management:invoice_create' %}" class="btn btn-primary animate__animated animate__pulse animate__infinite">
+                    <i class="fas fa-plus"></i> Create New Invoice
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="fas fa-search"></i> Search
+                            </label>
+                            <input type="text" name="search" value="{{ search|default:'' }}" 
+                                   class="form-control" placeholder="Search invoices, clients...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-filter"></i> Status
+                            </label>
+                            <select name="status" class="form-control">
+                                <option value="">All Statuses</option>
+                                <option value="draft" {% if status == 'draft' %}selected{% endif %}>Draft</option>
+                                <option value="sent" {% if status == 'sent' %}selected{% endif %}>Sent</option>
+                                <option value="paid" {% if status == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="overdue" {% if status == 'overdue' %}selected{% endif %}>Overdue</option>
+                                <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-info me-2">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                            <a href="{% url 'invoice_management:invoice_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Invoice List</h5>
+                </div>
+                <div class="card-body">
+                    {% if page_obj.object_list %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-hashtag"></i> Invoice #</th>
+                                        <th><i class="fas fa-user"></i> Client</th>
+                                        <th><i class="fas fa-calendar"></i> Issue Date</th>
+                                        <th><i class="fas fa-calendar-check"></i> Due Date</th>
+                                        <th><i class="fas fa-info-circle"></i> Status</th>
+                                        <th><i class="fas fa-dollar-sign"></i> Total</th>
+                                        <th><i class="fas fa-cogs"></i> Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in page_obj.object_list %}
+                                    <tr class="animate__animated animate__fadeInUp" style="animation-delay: 0.{{ forloop.counter }}s">
+                                        <td class="fw-bold">
+                                            <a href="{% url 'invoice_management:invoice_detail' invoice.pk %}" class="text-decoration-none">
+                                                {{ invoice.invoice_number }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm me-2">
+                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                        {{ invoice.client.name|first|upper }}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">{{ invoice.client.name }}</div>
+                                                    <small class="text-muted">{{ invoice.client.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ invoice.issue_date|date:"M d, Y" }}</td>
+                                        <td>
+                                            {{ invoice.due_date|date:"M d, Y" }}
+                                            {% if invoice.is_overdue %}
+                                                <span class="badge bg-danger ms-1">Overdue</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'sent' %}warning{% elif invoice.status == 'overdue' %}danger{% else %}secondary{% endif %}">
+                                                {% if invoice.status == 'paid' %}
+                                                    <i class="fas fa-check"></i>
+                                                {% elif invoice.status == 'sent' %}
+                                                    <i class="fas fa-paper-plane"></i>
+                                                {% elif invoice.status == 'overdue' %}
+                                                    <i class="fas fa-exclamation"></i>
+                                                {% else %}
+                                                    <i class="fas fa-edit"></i>
+                                                {% endif %}
+                                                {{ invoice.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td class="fw-bold">${{ invoice.total }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{% url 'invoice_management:invoice_detail' invoice.pk %}" 
+                                                   class="btn btn-outline-primary" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'invoice_management:invoice_edit' invoice.pk %}" 
+                                                   class="btn btn-outline-success" title="Edit Invoice">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'invoice_management:invoice_pdf' invoice.pk %}" 
+                                                   class="btn btn-outline-info" title="Download PDF" target="_blank">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Invoice pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="fas fa-file-invoice fa-4x text-muted opacity-50"></i>
+                            </div>
+                            {% if search or status %}
+                                <h5 class="text-muted mb-3">No invoices found matching your criteria 🔍</h5>
+                                <p class="text-muted mb-4">Try adjusting your search or filter options</p>
+                                <a href="{% url 'invoice_management:invoice_list' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </a>
+                            {% else %}
+                                <h5 class="text-muted mb-3">No invoices yet! Ready to make some money? 💰</h5>
+                                <p class="text-muted mb-4">Create your first invoice and start getting paid!</p>
+                                <a href="{% url 'invoice_management:invoice_create' %}" class="btn btn-primary pulse">
+                                    <i class="fas fa-plus"></i> Create Your First Invoice
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

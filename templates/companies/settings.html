@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Company Settings - Invoice Generator{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card animate__animated animate__fadeInUp">
+                <div class="card-header">
+                    <h4><i class="fas fa-building"></i> Company Settings</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Company Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Basic Information</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        <i class="fas fa-building"></i> Company Name *
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger mt-1">{{ form.name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                                        <i class="fas fa-envelope"></i> Email
+                                    </label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger mt-1">{{ form.email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Contact Information</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.country.id_for_label }}" class="form-label">
+                                        <i class="fas fa-globe"></i> Country *
+                                    </label>
+                                    {{ form.country }}
+                                    {% if form.country.errors %}
+                                        <div class="text-danger mt-1">{{ form.country.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                        <i class="fas fa-phone"></i> Phone
+                                    </label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger mt-1">{{ form.phone.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.website.id_for_label }}" class="form-label">
+                                        <i class="fas fa-globe"></i> Website
+                                    </label>
+                                    {{ form.website }}
+                                    {% if form.website.errors %}
+                                        <div class="text-danger mt-1">{{ form.website.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Address</h6>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="{{ form.address.id_for_label }}" class="form-label">
+                                        <i class="fas fa-map-marker-alt"></i> Address
+                                    </label>
+                                    {{ form.address }}
+                                    {% if form.address.errors %}
+                                        <div class="text-danger mt-1">{{ form.address.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoice Settings -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Invoice Settings</h6>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="{{ form.currency.id_for_label }}" class="form-label">
+                                        <i class="fas fa-dollar-sign"></i> Currency *
+                                    </label>
+                                    {{ form.currency }}
+                                    {% if form.currency.errors %}
+                                        <div class="text-danger mt-1">{{ form.currency.errors.0 }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">Auto-updates based on country</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="{{ form.invoice_prefix.id_for_label }}" class="form-label">
+                                        <i class="fas fa-hashtag"></i> Invoice Prefix
+                                    </label>
+                                    {{ form.invoice_prefix }}
+                                    {% if form.invoice_prefix.errors %}
+                                        <div class="text-danger mt-1">{{ form.invoice_prefix.errors.0 }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">e.g., INV, INVOICE</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="{{ form.default_tax_rate.id_for_label }}" class="form-label">
+                                        <i class="fas fa-percentage"></i> Default Tax Rate (%)
+                                    </label>
+                                    {{ form.default_tax_rate }}
+                                    {% if form.default_tax_rate.errors %}
+                                        <div class="text-danger mt-1">{{ form.default_tax_rate.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="{{ form.default_payment_terms.id_for_label }}" class="form-label">
+                                        <i class="fas fa-calendar"></i> Payment Terms (Days)
+                                    </label>
+                                    {{ form.default_payment_terms }}
+                                    {% if form.default_payment_terms.errors %}
+                                        <div class="text-danger mt-1">{{ form.default_payment_terms.errors.0 }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">Default days for payment</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Country to currency mapping
+    const countryCurrencyMap = {
+        'US': 'USD',
+        'CA': 'CAD',
+        'GB': 'GBP',
+        'AU': 'AUD',
+        'DE': 'EUR',
+        'FR': 'EUR',
+        'IT': 'EUR',
+        'ES': 'EUR',
+        'NL': 'EUR',
+        'BE': 'EUR',
+        'CH': 'CHF',
+        'AT': 'EUR',
+        'SE': 'SEK',
+        'NO': 'NOK',
+        'DK': 'DKK',
+        'FI': 'EUR',
+        'IE': 'EUR',
+        'PT': 'EUR',
+        'IN': 'INR',
+        'SG': 'SGD',
+        'HK': 'HKD',
+        'JP': 'JPY',
+        'CN': 'CNY',
+        'BR': 'BRL',
+        'MX': 'MXN',
+        'NZ': 'NZD',
+        'ZA': 'ZAR'
+    };
+
+    const countrySelect = document.getElementById('id_country');
+    const currencySelect = document.getElementById('id_currency');
+
+    if (countrySelect && currencySelect) {
+        countrySelect.addEventListener('change', function() {
+            const selectedCountry = this.value;
+            const suggestedCurrency = countryCurrencyMap[selectedCountry];
+            
+            if (suggestedCurrency) {
+                // Check if the suggested currency exists in the options
+                const currencyOption = currencySelect.querySelector(`option[value="${suggestedCurrency}"]`);
+                if (currencyOption) {
+                    currencySelect.value = suggestedCurrency;
+                    
+                    // Add visual feedback
+                    currencySelect.style.backgroundColor = '#d4edda';
+                    setTimeout(() => {
+                        currencySelect.style.backgroundColor = '';
+                    }, 1000);
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}
